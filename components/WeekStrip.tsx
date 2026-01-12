@@ -1,7 +1,7 @@
 import React from 'react';
 import { DayColor } from '../types';
 import { FALLBACK_COLOR } from '../constants';
-import { ChevronRight } from 'lucide-react';
+import { formatDateKey } from '../utils';
 
 interface WeekStripProps {
   startDate: Date;
@@ -18,13 +18,15 @@ export const WeekStrip: React.FC<WeekStripProps> = ({ startDate, colors, onSelec
     return d;
   });
 
+  const selectedDateKey = formatDateKey(selectedDate);
+
   return (
     <div className="w-full overflow-x-auto pb-4 pt-2 px-1">
       <div className="flex space-x-4 min-w-max md:min-w-0 md:justify-center">
         {days.map((date) => {
-          const dateKey = date.toISOString().split('T')[0];
+          const dateKey = formatDateKey(date);
           const data = colors[dateKey] || { ...FALLBACK_COLOR, hex: '#f1f5f9' };
-          const isSelected = selectedDate.toISOString().split('T')[0] === dateKey;
+          const isSelected = selectedDateKey === dateKey;
           
           return (
             <button

@@ -7,6 +7,7 @@ import { MonthGrid } from './components/MonthGrid';
 import { YearHeatmap } from './components/YearHeatmap';
 import { ExportModal } from './components/ExportModal';
 import { Palette, ChevronLeft, ChevronRight, Loader2, Download, Image as ImageIcon } from 'lucide-react';
+import { formatDateKey } from './utils';
 
 const App: React.FC = () => {
   // Constants
@@ -28,7 +29,7 @@ const App: React.FC = () => {
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>({});
 
   // Derived State
-  const currentDateKey = currentDate.toISOString().split('T')[0];
+  const currentDateKey = formatDateKey(currentDate);
   const currentMonthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   
   const activeColorData = colors[currentDateKey];
@@ -70,6 +71,7 @@ const App: React.FC = () => {
     // Check if we already have data for this month in the state (which includes seed/storage)
     let hasAllDays = true;
     for(let d=1; d<=daysInMonth; d++) {
+        // Use local manual construction to match service logic
         const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         if(!colors[dateKey]) {
             hasAllDays = false;

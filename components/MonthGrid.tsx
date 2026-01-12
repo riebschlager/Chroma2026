@@ -1,6 +1,7 @@
 import React from 'react';
 import { DayColor } from '../types';
 import { DAYS_OF_WEEK } from '../constants';
+import { formatDateKey } from '../utils';
 
 interface MonthGridProps {
   year: number;
@@ -14,6 +15,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({ year, month, colors, onSel
   const firstDayOfMonth = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startDayOfWeek = firstDayOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
+  const selectedDateKey = formatDateKey(selectedDate);
 
   const days = [];
   // Add empty placeholders for days before the 1st
@@ -47,9 +49,9 @@ export const MonthGrid: React.FC<MonthGridProps> = ({ year, month, colors, onSel
         {days.map((date, idx) => {
           if (!date) return <div key={`empty-${idx}`} className="aspect-square" />;
 
-          const dateKey = date.toISOString().split('T')[0];
+          const dateKey = formatDateKey(date);
           const colorData = colors[dateKey];
-          const isSelected = selectedDate.toISOString().split('T')[0] === dateKey;
+          const isSelected = selectedDateKey === dateKey;
           
           const colIndex = idx % 7;
           let tooltipClasses = "left-1/2 -translate-x-1/2";

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DayColor, ViewMode } from '../types';
 import { X, Download, Loader2, Image as ImageIcon, RefreshCcw, Smartphone, Monitor } from 'lucide-react';
 import { DAYS_OF_WEEK, MONTHS, FALLBACK_COLOR } from '../constants';
+import { formatDateKey } from '../utils';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -71,7 +72,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
   const handleDownload = () => {
     if (!previewUrl) return;
     const link = document.createElement('a');
-    const filename = `chroma_2026_${viewMode}_${format}_${currentDate.toISOString().split('T')[0]}.png`;
+    const dateKey = formatDateKey(currentDate);
+    const filename = `chroma_2026_${viewMode}_${format}_${dateKey}.png`;
     link.download = filename;
     link.href = previewUrl;
     link.click();
@@ -124,7 +126,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
 
         {/* Preview Area */}
         <div className="flex-grow overflow-auto bg-slate-100/50 p-8 flex justify-center items-center relative">
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-50" />
             
             {isGenerating || !previewUrl ? (
               <div className="flex flex-col items-center text-slate-400 animate-pulse">
@@ -136,7 +137,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
                 src={previewUrl} 
                 alt="Preview" 
                 className={`
-                    shadow-2xl ring-1 ring-black/5 rounded-lg transition-all duration-300
+                    shadow-2xl ring-1 ring-black/5 rounded-lg transition-all duration-300 relative z-10
                     ${format === 'story' ? 'h-full w-auto' : 'w-full max-w-4xl h-auto'}
                 `}
               />
@@ -226,7 +227,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 /* --- VIEW DRAWERS --- */
 
 const drawDayView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<string, DayColor>, width: number, height: number) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = formatDateKey(date);
     const data = colors[dateKey] || { ...FALLBACK_COLOR, date: dateKey };
     const isLandscape = width > height;
     
@@ -276,11 +277,6 @@ const drawDayView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<s
         ctx.globalAlpha = 0.8;
         ctx.font = '300 40px "Inter", sans-serif';
         wrapText(ctx, data.description, startX, startY + 350, contentWidth, 60);
-        
-        // Footer (Right side)
-        ctx.globalAlpha = 0.4;
-        ctx.font = '700 24px "Inter", sans-serif';
-        ctx.fillText(`${date.getFullYear()} • CHROMA CALENDAR`, startX, height - 100);
 
     } else {
         // --- STORY LAYOUT (Original) ---
@@ -305,6 +301,12 @@ const drawDayView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<s
 
         const cardY = 1100;
         const padding = 100;
+        
+        // Replaced semi-transparent bg with specific logic or remove entirely.
+        // For Day Story, a solid/semi-solid card is actually nice to separate description, 
+        // but let's make it cleaner - darker darks or lighter lights.
+        // Keeping it for Day view as it wasn't the complaint, but tweaking alpha?
+        // Actually, let's keep it as is for Day view to avoid regression unless requested.
         ctx.fillStyle = getSemiTransparentBg(data.hex);
         ctx.fillRect(0, cardY - 50, width, height - (cardY - 50));
 
@@ -323,12 +325,6 @@ const drawDayView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<s
         ctx.font = '300 50px "Inter", sans-serif';
         ctx.globalAlpha = 0.8;
         wrapText(ctx, data.description, padding, cardY + 450, width - (padding * 2), 70);
-
-        ctx.fillStyle = fg;
-        ctx.globalAlpha = 0.4;
-        ctx.font = '600 30px "Inter", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${date.getFullYear()} • CHROMA CALENDAR`, width / 2, height - 80);
     }
 };
 
@@ -345,7 +341,7 @@ const drawWeekView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
         for(let i=0; i<7; i++) {
             const d = new Date(startOfWeek);
             d.setDate(startOfWeek.getDate() + i);
-            const k = d.toISOString().split('T')[0];
+            const k = formatDateKey(d);
             const c = colors[k] || FALLBACK_COLOR;
             
             const x = i * colWidth;
@@ -355,58 +351,45 @@ const drawWeekView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
             
             const fg = getContrastColor(c.hex);
             
-            // Info Container (Bottom)
-            ctx.fillStyle = getSemiTransparentBg(c.hex);
-            ctx.fillRect(x, height - 400, colWidth, 400);
-            
             // Text
             ctx.fillStyle = fg;
             ctx.textAlign = 'center';
             
             // Top Date
-            ctx.font = '700 30px "Inter", sans-serif';
-            ctx.globalAlpha = 0.6;
+            ctx.font = '600 24px "Inter", sans-serif';
+            ctx.globalAlpha = 0.8;
             ctx.fillText(d.toLocaleString('default', {weekday:'short'}).toUpperCase(), x + colWidth/2, 100);
             
-            ctx.font = '700 120px "Playfair Display", serif';
+            ctx.font = '700 90px "Playfair Display", serif';
             ctx.globalAlpha = 1;
-            ctx.fillText(d.getDate().toString(), x + colWidth/2, 220);
+            ctx.fillText(d.getDate().toString(), x + colWidth/2, 200);
             
             // Bottom Info
             ctx.textAlign = 'left';
-            const pad = 30;
+            const pad = 25;
             const textX = x + pad;
             const textW = colWidth - (pad*2);
             
-            ctx.font = '700 36px "Inter", sans-serif';
-            wrapText(ctx, c.name, textX, height - 320, textW, 45);
-            
-            ctx.font = '400 20px "Inter", monospace';
+            // Layout from bottom up visually
+            // Hex at bottom
+            ctx.font = '400 18px "Inter", monospace';
             ctx.globalAlpha = 0.6;
-            ctx.fillText(c.hex, textX, height - 60);
+            ctx.fillText(c.hex, textX, height - 40);
             
-            // Global Footer overlay on last col
-            if (i === 6) {
-                ctx.save();
-                ctx.translate(width - 40, height/2);
-                ctx.rotate(-Math.PI/2);
-                ctx.textAlign = 'center';
-                ctx.font = '700 20px "Inter", sans-serif';
-                ctx.fillStyle = '#ffffff';
-                ctx.globalAlpha = 0.8;
-                ctx.shadowColor="black";
-                ctx.shadowBlur=4;
-                ctx.fillText("CHROMA2026 WEEKLY", 0, 0);
-                ctx.restore();
-            }
+            // Name above hex
+            ctx.globalAlpha = 1;
+            ctx.font = '700 32px "Playfair Display", serif';
+            const nameY = height - 160; 
+            // Wrap text downwards from nameY
+            wrapText(ctx, c.name, textX, nameY, textW, 40);
         }
     } else {
         // --- STORY (Portrait) ---
-        // White Bg
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, 0, width, height);
-
         // Header
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header Text
         ctx.fillStyle = '#0f172a';
         ctx.textAlign = 'left';
         ctx.font = '700 80px "Playfair Display", serif';
@@ -420,12 +403,12 @@ const drawWeekView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
         ctx.fillText(dateRange, 80, 210);
 
         const startY = 300;
-        const rowHeight = (height - startY - 100) / 7;
+        const rowHeight = (height - startY) / 7;
 
         for(let i=0; i<7; i++) {
             const d = new Date(startOfWeek);
             d.setDate(startOfWeek.getDate() + i);
-            const k = d.toISOString().split('T')[0];
+            const k = formatDateKey(d);
             const c = colors[k] || FALLBACK_COLOR;
             
             const y = startY + (i * rowHeight);
@@ -434,33 +417,32 @@ const drawWeekView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
             ctx.fillRect(0, y, width, rowHeight);
             const fg = getContrastColor(c.hex);
             
-            ctx.fillStyle = getSemiTransparentBg(c.hex);
-            ctx.fillRect(0, y, 280, rowHeight);
-
             ctx.fillStyle = fg;
-            ctx.textAlign = 'center';
-            ctx.font = '700 24px "Inter", sans-serif';
-            ctx.globalAlpha = 0.6;
-            ctx.fillText(d.toLocaleString('default', {weekday:'short'}).toUpperCase(), 140, y + (rowHeight/2) - 15);
-            
-            ctx.font = '700 60px "Playfair Display", serif';
-            ctx.globalAlpha = 1;
-            ctx.fillText(d.getDate().toString(), 140, y + (rowHeight/2) + 45);
-
             ctx.textAlign = 'left';
-            ctx.font = '700 48px "Inter", sans-serif';
-            ctx.fillText(c.name, 340, y + (rowHeight/2) + 10);
             
+            // Day Number Large
+            ctx.font = '700 90px "Playfair Display", serif';
+            ctx.globalAlpha = 1;
+            ctx.fillText(d.getDate().toString(), 80, y + (rowHeight/2) + 30);
+
+            // Weekday Small
+            ctx.font = '600 24px "Inter", sans-serif';
+            ctx.globalAlpha = 0.7;
+            ctx.fillText(d.toLocaleString('default', {weekday:'short'}).toUpperCase(), 200, y + (rowHeight/2) + 20);
+
+            // Color Name
+            ctx.font = '700 42px "Playfair Display", serif';
+            ctx.globalAlpha = 1;
+            // Center roughly in remaining space or align left
+            ctx.fillText(c.name, 350, y + (rowHeight/2) + 15);
+            
+            // Hex
+            ctx.textAlign = 'right';
             ctx.font = '400 24px "Inter", monospace';
             ctx.globalAlpha = 0.6;
-            ctx.fillText(c.hex, 340, y + (rowHeight/2) + 50);
+            ctx.fillText(c.hex, width - 60, y + (rowHeight/2) + 10);
             ctx.globalAlpha = 1;
         }
-        
-        ctx.fillStyle = '#cbd5e1';
-        ctx.textAlign = 'center';
-        ctx.font = '700 24px "Inter", sans-serif';
-        ctx.fillText("CHROMA2026", width/2, height - 40);
     }
 };
 
@@ -470,6 +452,8 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDay = new Date(year, month, 1).getDay();
+    const totalSlots = firstDay + daysInMonth;
+    const numRows = Math.ceil(totalSlots / 7);
 
     if (isLandscape) {
         // --- LANDSCAPE ---
@@ -489,23 +473,22 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
         ctx.fillText(year.toString(), 60, 100);
         
         ctx.fillStyle = '#ffffff';
-        ctx.font = '700 120px "Playfair Display", serif';
-        wrapText(ctx, MONTHS[month], 60, 240, panelW - 80, 130);
+        ctx.font = '700 90px "Playfair Display", serif'; 
+        wrapText(ctx, MONTHS[month], 60, 240, panelW - 80, 100);
 
-        ctx.fillStyle = '#475569';
-        ctx.font = '700 24px "Inter", sans-serif';
-        ctx.fillText("CHROMA2026", 60, height - 60);
-
-        // Grid
+        // Grid Layout
         const gridX = panelW + 60;
-        const gridY = 150;
+        const gridY = 180; // Moved down slightly to give headers room
+        const gridBottom = height - 60;
+        const availableHeight = gridBottom - gridY;
+        
         const gridW = width - panelW - 120;
         const gap = 15;
-        const cols = 7;
-        const colWidth = (gridW - (gap * (cols - 1))) / cols;
-        const cellHeight = colWidth * 0.8; // Squatter for landscape fitting
-
-        const totalSlots = firstDay + daysInMonth;
+        const colWidth = (gridW - (gap * 6)) / 7;
+        
+        // Calculate cell height to fill vertical space
+        // We have 'numRows' rows
+        const cellHeight = (availableHeight - (gap * (numRows - 1))) / numRows;
 
         // Weekday Headers
         ctx.fillStyle = '#94a3b8';
@@ -533,6 +516,7 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
             const fg = c ? getContrastColor(c.hex) : '#cbd5e1';
             ctx.fillStyle = fg;
             ctx.font = '700 30px "Inter", sans-serif';
+            // Vertically center text
             ctx.fillText(dayNum.toString(), x + colWidth/2, y + cellHeight/2 + 10);
         }
 
@@ -541,6 +525,7 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
         ctx.fillStyle = '#fffbeb';
         ctx.fillRect(0, 0, width, height);
         
+        // Header
         ctx.textAlign = 'center';
         ctx.fillStyle = '#94a3b8';
         ctx.font = '500 40px "Inter", sans-serif';
@@ -553,19 +538,24 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(width/2 - 50, 300, 100, 4);
 
-        const gridTop = 400;
-        const margin = 60;
-        const gap = 20;
-        const cols = 7;
-        const colWidth = (width - (margin*2) - (gap * (cols-1))) / cols;
-        const cellHeight = colWidth * 1.3;
-        const totalSlots = firstDay + daysInMonth;
+        // Grid Layout
+        const gridTop = 420; // Start below header
+        const gridBottom = height - 120; // Leave space for footer
+        const availableHeight = gridBottom - gridTop;
+        
+        const margin = 50;
+        const gap = 15;
+        const colWidth = (width - (margin*2) - (gap * 6)) / 7;
+        
+        // Dynamic cell height to fill the space
+        const cellHeight = (availableHeight - (gap * (numRows - 1))) / numRows;
 
+        // Headers
         ctx.fillStyle = '#cbd5e1';
         ctx.font = '700 24px "Inter", sans-serif';
         DAYS_OF_WEEK.forEach((d, i) => {
             const x = margin + (i * (colWidth + gap)) + (colWidth/2);
-            ctx.fillText(d.charAt(0), x, gridTop - 30);
+            ctx.fillText(d.charAt(0), x, gridTop - 40);
         });
 
         for (let i = 0; i < totalSlots; i++) {
@@ -580,20 +570,18 @@ const drawMonthView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record
             const c = colors[k];
             
             ctx.fillStyle = c ? c.hex : '#f1f5f9';
-            roundRect(ctx, x, y, colWidth, cellHeight, 16);
+            roundRect(ctx, x, y, colWidth, cellHeight, 12); // Slightly reduced radius for potentially taller cells
 
             const fg = c ? getContrastColor(c.hex) : '#94a3b8';
             ctx.fillStyle = fg;
             ctx.font = '700 36px "Inter", sans-serif';
-            ctx.fillText(dayNum.toString(), x + colWidth/2, y + cellHeight/2 + 10);
+            ctx.fillText(dayNum.toString(), x + colWidth/2, y + cellHeight/2 + 12);
         }
         
+        // Footer
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'italic 30px "Playfair Display", serif';
-        ctx.fillText("Monthly Palette", width/2 - 100, height - 80);
-        
-        ctx.font = '700 24px "Inter", sans-serif';
-        ctx.fillText("CHROMA2026", width/2 + 120, height - 80);
+        ctx.fillText("Monthly Palette", width/2, height - 50);
     }
 };
 
@@ -620,37 +608,46 @@ const drawYearView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
         ctx.fillStyle = '#94a3b8';
         ctx.fillText("A YEAR IN COLOR", 280, 95);
 
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '700 30px "Inter", sans-serif';
-        ctx.fillText("CHROMA2026", width - 60, 95);
-
-        // Grid 4 Cols x 3 Rows
-        const margin = 60;
-        const gridW = width - (margin*2);
-        const gridH = height - 200;
-        const startY = 180;
+        // Fixed Grid Layout for Landscape to ensure fit
+        const startY = 170;
+        const availableHeight = height - startY - 20; // 20px bottom padding
+        const rows = 3;
+        const cols = 4;
         
-        const mCols = 4;
-        const mGapX = 60;
-        const mGapY = 40;
-        const monthWidth = (gridW - (mGapX * (mCols - 1))) / mCols;
-
-        // Mini day grid
-        const dayGap = 2;
-        const daySize = (monthWidth - (dayGap * 6)) / 7;
+        // Calculate max possible height per month block
+        // Estimate title height and gaps
+        const titleHeight = 40;
+        const gridVerticalGap = 30; // gap between month rows
+        
+        // Available for the day grid itself
+        const maxGridHeight = (availableHeight - (gridVerticalGap * (rows - 1))) / rows - titleHeight;
+        
+        // Grid is 6 units high (approx, for max weeks)
+        // daySize * 6 + gap * 5 = maxGridHeight
+        const dayGap = 3;
+        const daySize = Math.floor((maxGridHeight - (dayGap * 5)) / 6);
+        
+        // Calculate Widths based on this daySize
+        const monthBlockWidth = (daySize * 7) + (dayGap * 6);
+        
+        // Calculate horizontal spacing to center
+        const totalContentWidth = (monthBlockWidth * cols);
+        const remainingWidth = width - totalContentWidth;
+        const gapX = remainingWidth / (cols + 1); // Spacing between cols and edges
 
         MONTHS.forEach((mName, mIdx) => {
-            const row = Math.floor(mIdx / mCols);
-            const col = mIdx % mCols;
+            const row = Math.floor(mIdx / cols);
+            const col = mIdx % cols;
             
-            const mx = margin + (col * (monthWidth + mGapX));
-            const my = startY + (row * ((daySize * 6) + 100));
+            const mx = gapX + (col * (monthBlockWidth + gapX));
+            const my = startY + (row * (maxGridHeight + titleHeight + gridVerticalGap));
 
             ctx.textAlign = 'left';
             ctx.fillStyle = '#334155';
-            ctx.font = '700 20px "Inter", sans-serif';
-            ctx.fillText(mName.toUpperCase(), mx, my - 15);
+            ctx.font = '700 24px "Inter", sans-serif';
+            ctx.fillText(mName.toUpperCase(), mx, my + 24); // Title baseline
+
+            const gridTopY = my + 35; // Space after title
 
             const daysInMonth = new Date(year, mIdx + 1, 0).getDate();
             const startDay = new Date(year, mIdx, 1).getDay();
@@ -663,7 +660,7 @@ const drawYearView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
                  const dRow = Math.floor(i / 7);
                  
                  const dx = mx + (dCol * (daySize + dayGap));
-                 const dy = my + (dRow * (daySize + dayGap));
+                 const dy = gridTopY + (dRow * (daySize + dayGap));
                  const k = `${year}-${String(mIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                  const c = colors[k];
                  
@@ -727,12 +724,5 @@ const drawYearView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
                  ctx.fillRect(dx, dy, daySize, daySize);
             }
         });
-
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(width/2 - 60, height - 100, 120, 2);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '700 30px "Inter", sans-serif';
-        ctx.fillText("CHROMA2026", width/2, height - 50);
     }
 };

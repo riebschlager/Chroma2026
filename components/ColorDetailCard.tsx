@@ -2,6 +2,7 @@ import React from 'react';
 import { DayColor } from '../types';
 import { FALLBACK_COLOR } from '../constants';
 import { Copy, Calendar } from 'lucide-react';
+import { formatDateKey } from '../utils';
 
 interface ColorDetailCardProps {
   date: Date;
@@ -11,7 +12,7 @@ interface ColorDetailCardProps {
 }
 
 export const ColorDetailCard: React.FC<ColorDetailCardProps> = ({ date, data, isLoading, immersive = false }) => {
-  const displayData = data || { ...FALLBACK_COLOR, date: date.toISOString().split('T')[0] };
+  const displayData = data || { ...FALLBACK_COLOR, date: formatDateKey(date) };
   
   const formattedDate = date.toLocaleDateString('en-US', {
     weekday: 'long',

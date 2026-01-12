@@ -1,5 +1,6 @@
 import React from 'react';
 import { DayColor } from '../types';
+import { formatDateKey } from '../utils';
 
 interface YearHeatmapProps {
   year: number;
@@ -39,7 +40,7 @@ export const YearHeatmap: React.FC<YearHeatmapProps> = ({ year, colors, onSelect
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
                 const date = new Date(year, month, day);
-                const dateKey = date.toISOString().split('T')[0];
+                const dateKey = formatDateKey(date);
                 const colorData = colors[dateKey];
                 
                 // Calculate grid position for tooltip alignment
