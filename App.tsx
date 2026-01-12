@@ -331,7 +331,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className={`border-t py-6 text-center text-sm transition-colors duration-500 ${isDayView ? (isBgLight ? 'border-slate-200 text-slate-400' : 'border-white/10 text-white/40') : 'border-slate-200 text-slate-400'}`}>
+      <footer className={`border-t py-6 text-center text-sm transition-colors duration-500 ${isDayView ? (isBgLight ? 'border-slate-200 text-slate-600' : 'border-white/10 text-white/80') : 'border-slate-200 text-slate-600'}`}>
         <p>Made by <a href="http://the816.com">Chris Riebschlager</a></p>
       </footer>
     </div>
