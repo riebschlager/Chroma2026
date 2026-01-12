@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     base: './', // Ensures assets are loaded correctly on GitHub Pages subdirectories
     define: {
       // Bakes the API key into the build. 
-      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || env.API_KEY)
+      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || env.API_KEY || '')
     },
     build: {
       outDir: 'dist',
