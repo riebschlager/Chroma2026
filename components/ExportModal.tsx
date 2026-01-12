@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DayColor, ViewMode } from '../types';
 import { X, Download, Loader2, Image as ImageIcon, RefreshCcw, Smartphone, Monitor } from 'lucide-react';
 import { DAYS_OF_WEEK, MONTHS, FALLBACK_COLOR } from '../constants';
