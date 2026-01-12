@@ -693,18 +693,36 @@ const drawYearView = (ctx: CanvasRenderingContext2D, date: Date, colors: Record<
         const monthWidth = (width - (margin*2) - (monthGapX * 2)) / 3;
         const dayGap = 3;
         const daySize = (monthWidth - (dayGap * 6)) / 7;
-        const startY = 350;
+        
+        // Start lower to give header breathing room
+        const startY = 360; 
+        // Leave margin at bottom
+        const endY = height - 100;
+        const totalGridHeight = endY - startY;
+        // Divide available vertical space into 4 rows (12 months = 3 cols x 4 rows)
+        const rowHeight = totalGridHeight / 4;
 
         MONTHS.forEach((mName, mIdx) => {
             const row = Math.floor(mIdx / 3);
             const col = mIdx % 3;
+            
             const monthX = margin + (col * (monthWidth + monthGapX));
-            const monthY = startY + (row * ((daySize * 6) + 120));
+            
+            // Center the month block vertically within its allocated row height
+            // Month Block = Grid + Title
+            const monthGridHeight = (daySize * 6) + (dayGap * 5);
+            const titleOffset = 40; 
+            const blockHeight = monthGridHeight + titleOffset;
+            const yOffset = (rowHeight - blockHeight) / 2;
+
+            // Calculate exact Y position for this month's grid start
+            const monthY = startY + (row * rowHeight) + yOffset + titleOffset;
 
             ctx.textAlign = 'left';
             ctx.fillStyle = '#334155';
             ctx.font = '700 24px "Inter", sans-serif';
-            ctx.fillText(mName.toUpperCase().substring(0,3), monthX, monthY - 20);
+            // Title drawn above the grid
+            ctx.fillText(mName.toUpperCase().substring(0,3), monthX, monthY - 15);
 
             const daysInMonth = new Date(year, mIdx + 1, 0).getDate();
             const startDay = new Date(year, mIdx, 1).getDay();
