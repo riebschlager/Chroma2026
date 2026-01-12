@@ -268,11 +268,6 @@ const App: React.FC = () => {
                  isLoading={isLoadingCurrent && !activeColorData} 
                  immersive={true}
                />
-               <div className="mt-8 max-w-md mx-auto text-center">
-                  <p className={`text-sm ${isBgLight ? 'text-slate-500' : 'text-white/60'}`}>
-                    {isLoadingCurrent && !activeColorData ? "AI is curating the palette..." : "Every color is uniquely generated to match the day's essence."}
-                  </p>
-               </div>
             </div>
           )}
 
@@ -337,7 +332,7 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <footer className={`border-t py-6 text-center text-sm transition-colors duration-500 ${isDayView ? (isBgLight ? 'border-slate-200 text-slate-400' : 'border-white/10 text-white/40') : 'border-slate-200 text-slate-400'}`}>
-        <p>© 2026 Chroma Calendar. Colors powered by Gemini AI.</p>
+        <p>Made by <a href="http://the816.com">Chris Riebschlager</a></p>
       </footer>
     </div>
   );
