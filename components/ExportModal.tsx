@@ -88,7 +88,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b border-slate-100 z-10 bg-white gap-4">
           <div className="flex items-center space-x-3 text-slate-800">
-            <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-200">
+            <div className="bg-slate-900 p-2.5 rounded-xl text-white shadow-lg shadow-slate-200">
               <ImageIcon className="w-5 h-5" />
             </div>
             <div>
@@ -102,7 +102,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
             <button
                 onClick={() => setFormat('story')}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    format === 'story' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                    format === 'story' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
                 <Smartphone className="w-4 h-4" />
@@ -111,7 +111,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, viewM
             <button
                 onClick={() => setFormat('landscape')}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    format === 'landscape' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+                    format === 'landscape' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
                 <Monitor className="w-4 h-4" />

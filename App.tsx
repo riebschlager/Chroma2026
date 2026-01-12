@@ -60,8 +60,8 @@ const App: React.FC = () => {
     ? (isBgLight ? 'text-slate-600 hover:bg-slate-200/50' : 'text-white/80 hover:bg-white/20')
     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50';
   const navButtonActive = isDayView
-    ? (isBgLight ? 'bg-white text-indigo-600 shadow-sm' : 'bg-white/20 text-white shadow-sm backdrop-blur-md')
-    : 'bg-white text-indigo-600 shadow-sm';
+    ? (isBgLight ? 'bg-white text-slate-900 shadow-sm' : 'bg-white/20 text-white shadow-sm backdrop-blur-md')
+    : 'bg-white text-slate-900 shadow-sm';
 
   // Helper to check if we need to fetch data for a specific month
   const checkAndFetchMonth = useCallback(async (year: number, month: number) => {
@@ -181,11 +181,11 @@ const App: React.FC = () => {
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-500 ${navBgClass}`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-2 rounded-lg shadow-sm">
+            <div className={`p-2 rounded-lg shadow-sm transition-colors duration-500 ${isDayView && !isBgLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}>
               <Palette className="w-5 h-5" />
             </div>
             <h1 className={`text-xl font-bold tracking-tight hidden sm:block ${themeText}`}>
-              Chroma<span className={isDayView && !isBgLight ? 'text-indigo-300' : 'text-indigo-600'}>2026</span>
+              Chroma<span className="opacity-50">2026</span>
             </h1>
           </div>
 
